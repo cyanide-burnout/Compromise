@@ -128,7 +128,7 @@ class Query : public Compromise::Emitter<ResolverEvent>
     bool update(Event& data)
     {
       ResolveHostAddress(state, name, family, invoke, this, &iterator);
-      return false;
+      return false;  // Update is incomplete, suspend coroutine and wait for call to wake()
     }
 
     static void invoke(void* argument, int status, int timeouts, struct hostent* entry)
