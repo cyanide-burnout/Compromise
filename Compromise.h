@@ -1,13 +1,9 @@
 #ifndef COMPROMISE_H
 #define COMPROMISE_H
 
-/*
- Simple C++ coroutine helper library
-
- https://github.com/cyanide-burnout/Compromise
-
- Artem Prilutskiy, 2022
-*/
+// Simple C++ coroutine helper library
+// https://github.com/cyanide-burnout/Compromise
+// Artem Prilutskiy, 2022
 
 #include <memory>
 #include <utility>
