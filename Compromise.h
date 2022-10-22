@@ -23,8 +23,8 @@ namespace Compromise
   typedef std::shared_ptr<Data> Value;
   typedef std::coroutine_handle<Promise> Handle;
 
-  struct Data           { virtual ~Data()     = default; };
-  struct Task : Handle  { using promise_type  = Promise; };
+  struct Data           { virtual ~Data()    = default; };
+  struct Task : Handle  { using promise_type = Promise; };
 
   // In this implementation it is allowed only to pass value back to caller only thru co_yield.
 
