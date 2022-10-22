@@ -14,7 +14,7 @@ I prefered to not generate an instance of Future to make more flexibilities with
 You have to create an instance of Future separately.
 
 ```C++
-static Compromise::Task TestYield()
+Compromise::Task TestYield()
 {
   std::shared_ptr<TestResult> data = std::make_shared<TestResult>();
 
@@ -51,7 +51,7 @@ Compromise::Future is a future class implementation no manage coroutine.
 * Provides awaitable interface to the caller, which allows to call one coroutine from another one
 
 ```C++
-static Compromise::Task TestInvokeFromCoroutine()
+Compromise::Task TestInvokeFromCoroutine()
 {
   Compromise::Future routine(TestYield());
 
@@ -62,7 +62,7 @@ static Compromise::Task TestInvokeFromCoroutine()
   }
 }
 
-static Compromise::Task TestInvokeFromFunction()
+void TestInvokeFromFunction()
 {
   Compromise::Future routine(TestYield());
 
@@ -81,14 +81,14 @@ static Compromise::Task TestInvokeFromFunction()
 Compromise::Emitter is a wrapper to transform callback-style code into an awaitable, where Type is a type of object to return in co_yield.
 
 ```C++
-static Compromise::Task TestClient(CloudClient* context)
+Compromise::Task TestClient(CloudClient* context)
 {
   auto result = co_await CoCloud::Client(context, "https://ya.ru/robots.txt");
 
   if (result.code >= 0) printf("HTTP Code %d: %s\n", result.code, result.data);
 }
 
-static Compromise::Task TestResolver(struct ResolverState* context)
+Compromise::Task TestResolver(struct ResolverState* context)
 {
   CoResolver::Query query1(context, "127.0.0.1");
   CoResolver::Query query2(context, "rotate.aprs.net", AF_INET);
