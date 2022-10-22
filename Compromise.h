@@ -88,12 +88,6 @@ namespace Compromise
   {
     public:
 
-      Emitter()                          = default;
-      Emitter(Emitter&&)                 = delete;
-      Emitter(const Emitter&)            = delete;
-      Emitter& operator=(Emitter&&)      = delete;
-      Emitter& operator=(const Emitter&) = delete;
-
       const Type& value()  { return data; };
 
       bool wait(Handle& handle)
@@ -120,11 +114,10 @@ namespace Compromise
 
     protected:
 
-      // In case of synchronous processing, update() can update the data and return true to avoid coroutine from suspension.
-      // Otherwise update() has to return false and following callback must call wake() to resume coroutine.
-
       virtual bool update(Type&)
       {
+        // In case of synchronous processing, update() can update the data and return true to avoid coroutine from suspension.
+        // Otherwise update() has to return false and following callback must call wake() to resume coroutine.
         return false;
       };
   };
