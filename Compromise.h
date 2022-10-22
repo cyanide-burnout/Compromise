@@ -30,23 +30,19 @@ namespace Compromise
 
   struct Promise
   {
-    Handle get_return_object()                         { return { Handle::from_promise(*this) }; };
-    std::suspend_never initial_suspend()     noexcept  { return {  };                            };
-    std::suspend_always final_suspend()      noexcept  { return {  };                            };
-    std::suspend_always yield_value(Value value)       { data = std::move(value);  return {  };  };
-    void unhandled_exception()                         { std::terminate();                       };
-    void return_void()                                 { data.reset();                           };
+    Handle get_return_object()                         { return Handle::from_promise(*this);   };
+    std::suspend_never initial_suspend()     noexcept  { return {  };                          };
+    std::suspend_always final_suspend()      noexcept  { return {  };                          };
+    std::suspend_always yield_value(Value value)       { data = std::move(value); return {  }; };
+    void unhandled_exception()                         { std::terminate();                     };
+    void return_void()                                 { data.reset();                         };
 
-    Status status(Status value)                        { return std::exchange(state, value);     };
-
-    Status state = Resume;
     Value data;
+    Status status = Resume;
   };
 
   template<class Actor, typename Type> struct Awaiter
   {
-    Awaiter(Actor& actor)              noexcept  : actor(actor) {             };
-
     constexpr bool await_ready() const noexcept  { return false;              };
     bool await_suspend(Handle handle)  noexcept  { return actor.wait(handle); };
     Type await_resume()                noexcept  { return actor.value();      };
@@ -66,10 +62,10 @@ namespace Compromise
 
       const Type& value()  { return data; };
 
-      bool wait(Handle& handle)     { routine = std::move(handle);  return !update(data);                           };
-      void wake(const Type& event)  { if (routine) { data = std::move(event);  std::exchange(routine, nullptr)(); } };
+      bool wait(Handle& handle)     { routine = std::move(handle); return !update(data);                           };
+      void wake(const Type& event)  { if (routine) { data = std::move(event); std::exchange(routine, nullptr)(); } };
 
-      Awaiter<Emitter, const Type&> operator co_await() noexcept  { return Awaiter<Emitter, const Type&>(*this); };
+      Awaiter<Emitter, const Type&> operator co_await() noexcept  { return { *this }; };
 
     private:
 
@@ -97,14 +93,14 @@ namespace Compromise
       Future& operator=(Future&&)      = delete;
       Future& operator=(const Future&) = delete;
 
-      bool done()       { return !routine || routine.done();            };
-      void resume()     { routine.promise().status(Resume);  routine(); };
-      Value& value()    { return routine.promise().data;                };
-      Handle& handle()  { return routine;                               };
+      bool done()       { return !routine || routine.done();             };
+      void resume()     { routine.promise().status = Resume;  routine(); };
+      Value& value()    { return routine.promise().data;                 };
+      Handle& handle()  { return routine;                                };
 
-      bool wait(Handle&)  { if (routine.promise().status(Suspend)) routine();  return false; };
+      bool wait(Handle&)  { if (std::exchange(routine.promise().status, Suspend)) routine();  return false; };
 
-      Awaiter<Future, Value&> operator co_await() noexcept  { return Awaiter<Future, Value&>(*this); };
+      Awaiter<Future, Value&> operator co_await() noexcept  { return { *this }; };
 
     private:
 
