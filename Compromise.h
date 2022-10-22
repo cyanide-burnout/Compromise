@@ -89,8 +89,6 @@ namespace Compromise
   {
     public:
 
-      using promise_type = Promise;
-
       explicit Future(Promise* promise)  { routine = Handle::from_promise(*promise); };
       Future(Handle&& handle)            { std::exchange(routine, handle);           };
       ~Future()                          { if (routine) routine.destroy();           };
