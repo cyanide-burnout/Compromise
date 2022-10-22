@@ -30,9 +30,6 @@ namespace Compromise
 
   struct Promise
   {
-    Promise()                                          { state = Resume;                         };
-    Status status(Status value)                        { return std::exchange(state, value);     };
-
     Handle get_return_object()                         { return { Handle::from_promise(*this) }; };
     std::suspend_never initial_suspend()     noexcept  { return {  };                            };
     std::suspend_always final_suspend()      noexcept  { return {  };                            };
@@ -40,7 +37,9 @@ namespace Compromise
     void unhandled_exception()                         { std::terminate();                       };
     void return_void()                                 { data.reset();                           };
 
-    Status state;
+    Status status(Status value)                        { return std::exchange(state, value);     };
+
+    Status state = Resume;
     Value data;
   };
 
