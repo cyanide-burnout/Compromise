@@ -31,7 +31,7 @@ namespace Compromise
 
   using Task = Future;
 
-  // In this implementation it is allowed only to pass value back to caller only thru co_yield.
+  // In this implementation it is allowed to pass value back to caller by co_yield only.
 
   struct Promise
   {
