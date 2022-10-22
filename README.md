@@ -3,7 +3,7 @@ Simple C++ coroutine helper library
 
 Artem Prilutskiy, 2022
 
-*Please note*, examples are incomplete fut functional.
+*Please note*, examples are incomplete but functional :)
 
 ## Main components
 
