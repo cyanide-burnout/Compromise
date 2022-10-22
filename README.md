@@ -76,7 +76,7 @@ static Compromise::Task TestInvokeFromFunction()
 
 ```
 
-## Compromise::Emitter<Type>
+## Compromise::Emitter
 
 Compromise::Emitter is a wrapper to transform callback-style code into an awaitable, where Type is a type of object to return in co_yield.
 
