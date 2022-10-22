@@ -88,22 +88,9 @@ namespace Compromise
   {
     public:
 
-      const Type& value()  { return data; };
-
-      bool wait(Handle& handle)
-      {
-        routine = std::move(handle);
-        return !update(data);
-      };
-
-      void wake(const Type& event)
-      {
-        if (routine)
-        {
-          data = std::move(event);
-          std::exchange(routine, nullptr).resume();
-        }
-      };
+      const Type& value()           { return data;                                                                 };
+      bool wait(Handle& handle)     { routine = std::move(handle); return !update(data);                           };
+      void wake(const Type& event)  { if (routine) { data = std::move(event); std::exchange(routine, nullptr)(); } };
 
       Awaiter<Emitter, const Type&> operator co_await() noexcept  {  return { *this }; };
 
