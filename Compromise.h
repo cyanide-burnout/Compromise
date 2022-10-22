@@ -30,10 +30,10 @@ namespace Compromise
   };
 
   typedef Data Empty;
-  typedef Future Task;
-
   typedef std::shared_ptr<Data> Value;
   typedef std::coroutine_handle<Promise> Handle;
+
+  using Task = Future;
 
   // In this implementation it is allowed only to pass value back to caller only thru co_yield.
 

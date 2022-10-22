@@ -9,7 +9,7 @@ Artem Prilutskiy, 2022
 
 ### Compromise::Task / Compromise::Future
 
-That is main type that represents a coroutine.
+Compromise::Future is main type that represents a coroutine, Compromise::Task is just an alias type to simplify readability.
 
 ```C++
 Compromise::Task TestYield()
@@ -54,6 +54,8 @@ void TestInvokeFromFunction()
     routine.resume();
   }
 }
+
+Compromise::Task taskOnHeap = new Compromise::Task(TestYield());
 
 ```
 
