@@ -67,8 +67,8 @@ namespace Compromise
 
       const Type& value()  { return data; };
 
-      bool wait(Handle& handle)     { routine = std::move(handle);  return !update(data);                                                   };
-      void wake(const Type& event)  { Handle handle;  if (routine) { data = std::move(event);  std::exchange(handle, routine);  handle(); } };
+      bool wait(Handle& handle)     { routine = std::move(handle);  return !update(data);                           };
+      void wake(const Type& event)  { if (routine) { data = std::move(event);  std::exchange(routine, nullptr)(); } };
 
       Awaiter<Emitter, const Type&> operator co_await() noexcept  { return Awaiter<Emitter, const Type&>(*this); };
 
@@ -98,19 +98,18 @@ namespace Compromise
       Future& operator=(Future&&)      = delete;
       Future& operator=(const Future&) = delete;
 
-      bool done()       { return !routine || routine.done();                                    };
-      void resume()     { if (routine) { routine.promise().status(Resume);  routine.resume(); } };
-      Value& value()    { return routine ? routine.promise().data : dummy;                      };
-      Handle& handle()  { return routine;                                                       };
+      bool done()       { return !routine || routine.done();            };
+      void resume()     { routine.promise().status(Resume);  routine(); };
+      Value& value()    { return routine.promise().data;                };
+      Handle& handle()  { return routine;                               };
 
-      bool wait(Handle& handle)  { if (routine && routine.promise().status(Suspend)) routine.resume(); return false; };
+      bool wait(Handle&)  { if (routine.promise().status(Suspend)) routine();  return false; };
 
       Awaiter<Future, Value&> operator co_await() noexcept  { return Awaiter<Future, Value&>(*this); };
 
     private:
 
       Handle routine;
-      Value dummy;
   };
 };
 
