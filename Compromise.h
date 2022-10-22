@@ -75,6 +75,8 @@ namespace Compromise
 
       bool wait(Handle&);
 
+      operator bool();
+      Value& operator ()();
       Awaiter<Future, Value&> operator co_await() noexcept;
 
     private:

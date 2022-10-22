@@ -88,6 +88,17 @@ bool Future::wait(Handle&)
   return false;
 };
 
+Future::operator bool()
+{
+  return routine && !routine.done();
+}
+
+Value& Future::operator ()()
+{
+  if (std::exchange(routine.promise().status, Suspend)) routine();
+  return routine.promise().data;
+};
+
 Awaiter<Future, Value&> Future::operator co_await() noexcept
 {
   return { *this };

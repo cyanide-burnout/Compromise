@@ -36,7 +36,7 @@ Compromise::Task TestInvokeFromCoroutine()
 {
   auto routine = TestYield();
 
-  while (!routine.done())
+  while (routine)
   {
     auto data = std::dynamic_pointer_cast<TestResult>(co_await routine);
     if (data) printf("Result: %d\n", data->number);
@@ -47,11 +47,10 @@ void TestInvokeFromFunction()
 {
   auto routine = TestYield();
 
-  while (!routine.done())
+  while (routine)
   {
-    auto data = std::dynamic_pointer_cast<TestResult>(routine.value());
-    printf("Result: %d\n", data->number);
-    routine.resume();
+    auto data = std::dynamic_pointer_cast<TestResult>(routine());
+    if (data) printf("Result: %d\n", data->number);
   }
 }
 
