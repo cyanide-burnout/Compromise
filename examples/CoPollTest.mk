@@ -14,6 +14,7 @@ OBJECTS := \
 	FastPoll.o \
 	Resolver.o \
 	CloudClient.o \
+	Compromise.o \
 	CoPoll.o \
 	CoResolver.o \
 	CoCloudClient.o \

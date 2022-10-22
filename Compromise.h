@@ -16,29 +16,40 @@
 namespace Compromise
 {
   struct Promise;
-  struct Data;
+  class Future;
 
-  enum Status  { Resume, Suspend };
+  enum Status
+  {
+    Resume,
+    Suspend
+  };
+
+  struct Data
+  {
+    virtual ~Data() = default;
+  };
+
+  typedef Data Empty;
+  typedef Future Task;
 
   typedef std::shared_ptr<Data> Value;
   typedef std::coroutine_handle<Promise> Handle;
-
-  struct Data           { virtual ~Data()    = default; };
-  struct Task : Handle  { using promise_type = Promise; };
 
   // In this implementation it is allowed only to pass value back to caller only thru co_yield.
 
   struct Promise
   {
-    Handle get_return_object()                         { return Handle::from_promise(*this);   };
-    std::suspend_never initial_suspend()     noexcept  { return {  };                          };
-    std::suspend_always final_suspend()      noexcept  { return {  };                          };
-    std::suspend_always yield_value(Value value)       { data = std::move(value); return {  }; };
-    void unhandled_exception()                         { std::terminate();                     };
-    void return_void()                                 { data.reset();                         };
+    Promise();
+
+    Future get_return_object();
+    std::suspend_never initial_suspend() noexcept;
+    std::suspend_always final_suspend() noexcept;
+    std::suspend_always yield_value(Value value);
+    void unhandled_exception();
+    void return_void();
 
     Value data;
-    Status status = Resume;
+    Status status;
   };
 
   template<class Actor, typename Type> struct Awaiter
@@ -48,6 +59,31 @@ namespace Compromise
     Type await_resume()                noexcept  { return actor.value();      };
 
     Actor& actor;
+  };
+
+  class Future
+  {
+    public:
+
+      using promise_type = Promise;
+
+      explicit Future(Promise* promise);
+      Future(Handle&& handle);
+      Future(Future&& future);
+      ~Future();
+
+      bool done();
+      void resume();
+      Value& value();
+      Handle& handle();
+
+      bool wait(Handle&);
+
+      Awaiter<Future, Value&> operator co_await() noexcept;
+
+    private:
+
+      Handle routine;
   };
 
   template<class Type> class Emitter
@@ -62,10 +98,22 @@ namespace Compromise
 
       const Type& value()  { return data; };
 
-      bool wait(Handle& handle)     { routine = std::move(handle); return !update(data);                           };
-      void wake(const Type& event)  { if (routine) { data = std::move(event); std::exchange(routine, nullptr)(); } };
+      bool wait(Handle& handle)
+      {
+        routine = std::move(handle);
+        return !update(data);
+      };
 
-      Awaiter<Emitter, const Type&> operator co_await() noexcept  { return { *this }; };
+      void wake(const Type& event)
+      {
+        if (routine)
+        {
+          data = std::move(event);
+          std::exchange(routine, nullptr).resume();
+        }
+      };
+
+      Awaiter<Emitter, const Type&> operator co_await() noexcept  {  return { *this }; };
 
     private:
 
@@ -77,34 +125,10 @@ namespace Compromise
       // In case of synchronous processing, update() can update the data and return true to avoid coroutine from suspension.
       // Otherwise update() has to return false and following callback must call wake() to resume coroutine.
 
-      virtual bool update(Type&) { return false; };
-  };
-
-  class Future
-  {
-    public:
-
-      explicit Future(Promise* promise)  { routine = Handle::from_promise(*promise); };
-      Future(Handle&& handle)            { std::exchange(routine, handle);           };
-      ~Future()                          { if (routine) routine.destroy();           };
-
-      Future(Future&&)                 = delete;
-      Future(const Future&)            = delete;
-      Future& operator=(Future&&)      = delete;
-      Future& operator=(const Future&) = delete;
-
-      bool done()       { return !routine || routine.done();             };
-      void resume()     { routine.promise().status = Resume;  routine(); };
-      Value& value()    { return routine.promise().data;                 };
-      Handle& handle()  { return routine;                                };
-
-      bool wait(Handle&)  { if (std::exchange(routine.promise().status, Suspend)) routine();  return false; };
-
-      Awaiter<Future, Value&> operator co_await() noexcept  { return { *this }; };
-
-    private:
-
-      Handle routine;
+      virtual bool update(Type&)
+      {
+        return false;
+      };
   };
 };
 

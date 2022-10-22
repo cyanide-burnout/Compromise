@@ -7,11 +7,9 @@ Artem Prilutskiy, 2022
 
 ## Main components
 
-### Compromise::Task
+### Compromise::Task / Compromise::Future
 
-That is main type that represents a coroutine. It derives std::coroutine_handle<Promise> and not a Future.
-I prefered to not generate an instance of Future to make more flexibilities with managing future as well as readiness of core.
-You have to create an instance of Future separately.
+That is main type that represents a coroutine.
 
 ```C++
 Compromise::Task TestYield()
@@ -24,11 +22,42 @@ Compromise::Task TestYield()
 
 ```
 
-There is no suspend on the start of coroutine. In case when you need to suspend coroutine immedietly after the start you can always use co_yield with empty Compromise::Data().
+There is no suspend on the start of coroutine. In case when you need to suspend coroutine immedietly after the start you can always use co_yield with Compromise::Empty().
 Now is about co_return. To make coroutines more generic, there is no support of return values, but you can always use co_yield to pass result before exiting.
 
+Compromise::Future is a future class implementation no manage coroutine.
 
-## Compromise::Data and Compromise::Value
+* Can be created on the stack as well as on the heap by using copy constructor
+* Controls live-cycle of coroutine
+* Provides awaitable interface to the caller, which allows to call one coroutine from another one
+
+```C++
+Compromise::Task TestInvokeFromCoroutine()
+{
+  auto routine = TestYield();
+
+  while (!routine.done())
+  {
+    auto data = std::dynamic_pointer_cast<TestResult>(co_await routine);
+    if (data) printf("Result: %d\n", data->number);
+  }
+}
+
+void TestInvokeFromFunction()
+{
+  auto routine = TestYield();
+
+  while (!routine.done())
+  {
+    auto data = std::dynamic_pointer_cast<TestResult>(routine.value());
+    printf("Result: %d\n", data->number);
+    routine.resume();
+  }
+}
+
+```
+
+## Compromise::Data / Compromise::Value / Compromise::Empty
 
 Compromise::Data type for your own types to pass the data from (and to) coroutine using operator co_yield. Compromise::Value is simple smart pointer on it.
 
@@ -41,40 +70,7 @@ struct TestResult : Compromise::Data
 ```
 
 This approach allows to pass different data types between caller and callable in coroutine at the same time by using dynamic casting and type checking.
-
-## Compromise::Future
-
-Compromise::Future is a future class implementation no manage coroutine.
-
-* Can be created on the stack as well as on the heap
-* Controls live-cycle of Compromise::Task
-* Provides awaitable interface to the caller, which allows to call one coroutine from another one
-
-```C++
-Compromise::Task TestInvokeFromCoroutine()
-{
-  Compromise::Future routine(TestYield());
-
-  while (!routine.done())
-  {
-    auto data = std::dynamic_pointer_cast<TestResult>(co_await routine);
-    if (data) printf("Result: %d\n", data->number);
-  }
-}
-
-void TestInvokeFromFunction()
-{
-  Compromise::Future routine(TestYield());
-
-  while (!routine.done())
-  {
-    auto data = std::dynamic_pointer_cast<TestResult>(routine.value());
-    printf("Result: %d\n", data->number);
-    routine.resume();
-  }
-}
-
-```
+Compromise::Empty is an alias to Compromise::Data to pass empty data.
 
 ## Compromise::Emitter
 

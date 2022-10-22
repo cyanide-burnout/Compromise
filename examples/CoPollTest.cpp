@@ -89,9 +89,9 @@ static Compromise::Task TestYield()
 
 static Compromise::Task TestInvoke()
 {
-  Compromise::Future routine(TestYield());
+  auto routine = TestYield();
 
-  while (!slave.done())
+  while (!routine.done())
   {
     auto data = std::dynamic_pointer_cast<TestResult>(co_await routine);
     if (data) printf("TestInvoke: %d\n", data->number);
@@ -110,11 +110,11 @@ int main()
   client   = CreateCloudClient(poll, 500);
   resolver = CreateResolver(poll);
 
-  Compromise::Future a(TestPoll(poll));
-  Compromise::Future b(TestClient(client));
-  Compromise::Future c(TestResolver(resolver));
-  Compromise::Future d(TestYield());
-  Compromise::Future e(TestInvoke());
+  auto a = TestPoll(poll);
+  auto b = TestClient(client);
+  auto c = TestResolver(resolver);
+  auto d = TestYield();
+  auto e = TestInvoke();
 
   sigemptyset(&set);
   sigaddset(&set, SIGINT);
