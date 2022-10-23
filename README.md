@@ -31,6 +31,17 @@ Compromise::Future is a future class implementation no manage coroutine.
 * Controls live-cycle of coroutine
 * Provides awaitable interface to the caller, which allows to call one coroutine from another one
 
+Methods:
+
+* done() - coroutine done or not exists
+* value() - get last value, passed by co_yield
+* resume() - resume coroutine
+* handle() - get coroutine handle
+* operator bool() - coroutine exists and not done
+* operator () - resumes coroutine and returns a value, passed by co_yield (synchronous call, value may be not set in case of incomplete execution)
+* operator co_await() - resumes coroutine and returns a value, passed by co_yield (asynchronous call)
+
+
 ```C++
 Compromise::Task TestInvokeFromCoroutine()
 {

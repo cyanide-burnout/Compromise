@@ -1,11 +1,8 @@
 #include "Compromise.h"
 
-#include <utility>
-#include <type_traits>
-
 using namespace Compromise;
 
-Promise::Promise() : status(Resume)
+Promise::Promise() : status(Probable)
 {
 
 };
@@ -68,7 +65,8 @@ bool Future::done()
 
 void Future::resume()
 {
-  routine.promise().status = Resume;
+  routine.promise().status = Probable;
+  routine.promise().data.reset();
   routine.resume();
 };
 
@@ -84,7 +82,11 @@ Handle& Future::handle()
 
 bool Future::wait(Handle&)
 {
-  if (std::exchange(routine.promise().status, Suspend)) routine();
+  if (std::exchange(routine.promise().status, Incomplete) == Incomplete)
+  {
+    routine.promise().data.reset();
+    routine.resume();
+  }
   return false;
 };
 
@@ -95,7 +97,11 @@ Future::operator bool()
 
 Value& Future::operator ()()
 {
-  if (std::exchange(routine.promise().status, Suspend)) routine();
+  if (std::exchange(routine.promise().status, Incomplete) == Incomplete)
+  {
+    routine.promise().data.reset();
+    routine.resume();
+  }
   return routine.promise().data;
 };
 

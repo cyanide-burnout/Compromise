@@ -16,8 +16,8 @@ namespace Compromise
 
   enum Status
   {
-    Resume,
-    Suspend
+    Probable,
+    Incomplete
   };
 
   struct Data
