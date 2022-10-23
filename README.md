@@ -41,7 +41,7 @@ Compromise::Future is a future class implementation no manage coroutine.
 * **handle()** - get coroutine handle
 * **rethrow()** - rethrow an unhandled exception (if any)
 * **operator bool()** - coroutine exists and not done
-* **operator ()** - resumes coroutine and returns a value, passed by co_yield (synchronous call, value may be not set in case of incomplete execution)
+* **operator ()()** - resumes coroutine and returns a value, passed by co_yield (synchronous call, value may be not set in case of incomplete execution)
 * **operator co_await()** - resumes coroutine and returns a value, passed by co_yield (asynchronous call)
 
 ```C++
