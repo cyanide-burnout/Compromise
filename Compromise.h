@@ -8,6 +8,7 @@
 #include <memory>
 #include <utility>
 #include <coroutine>
+#include <exception>
 
 namespace Compromise
 {
@@ -46,6 +47,7 @@ namespace Compromise
 
     Value data;
     Status status;
+    std::exception_ptr exception;
   };
 
   template<class Actor, typename Type> struct Awaiter
@@ -72,6 +74,7 @@ namespace Compromise
       void resume();
       Value& value();
       Handle& handle();
+      std::exception_ptr& exception();
 
       bool wait(Handle&);
 

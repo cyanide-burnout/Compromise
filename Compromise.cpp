@@ -30,7 +30,7 @@ std::suspend_always Promise::yield_value(Value value)
 
 void Promise::unhandled_exception()
 {
-  std::terminate();
+  exception = std::current_exception();
 };
 
 void Promise::return_void()
@@ -79,6 +79,11 @@ Handle& Future::handle()
 {
   return routine;
 };
+
+std::exception_ptr& Future::exception()
+{
+  return routine.promise().exception;
+}
 
 bool Future::wait(Handle&)
 {
