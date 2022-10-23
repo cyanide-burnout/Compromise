@@ -16,6 +16,8 @@ Compromise::Task TestYield()
 {
   std::shared_ptr<TestResult> data = std::make_shared<TestResult>();
 
+  co_yield Compromise::Empty();
+
   for (data->number = 0; data->number < 10; data->number ++)
     co_yield data;
 }

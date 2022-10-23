@@ -25,9 +25,9 @@ namespace Compromise
     virtual ~Data() = default;
   };
 
-  typedef Data Empty;
-  typedef std::shared_ptr<Data> Value;
   typedef std::coroutine_handle<Promise> Handle;
+  typedef std::shared_ptr<Data> Value;
+  typedef Value Empty;
 
   using Task = Future;
 
