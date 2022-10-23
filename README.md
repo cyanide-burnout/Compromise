@@ -31,15 +31,15 @@ Compromise::Future is a future class implementation no manage coroutine.
 * Controls live-cycle of coroutine
 * Provides awaitable interface to the caller, which allows to call one coroutine from another one
 
-Methods:
+#### Methods:
 
-* done() - coroutine done or not exists
-* value() - get last value, passed by co_yield
-* resume() - resume coroutine
-* handle() - get coroutine handle
-* operator bool() - coroutine exists and not done
-* operator () - resumes coroutine and returns a value, passed by co_yield (synchronous call, value may be not set in case of incomplete execution)
-* operator co_await() - resumes coroutine and returns a value, passed by co_yield (asynchronous call)
+* **done()** - coroutine done or not exists
+* **value()** - get last value, passed by co_yield
+* **resume()** - resumes coroutine
+* **handle()** - get coroutine handle
+* **operator bool()** - coroutine exists and not done
+* **operator ()** - resumes coroutine and returns a value, passed by co_yield (synchronous call, value may be not set in case of incomplete execution)
+* **operator co_await()** - resumes coroutine and returns a value, passed by co_yield (asynchronous call)
 
 
 ```C++
@@ -87,6 +87,11 @@ Compromise::Empty is an alias to Compromise::Data to pass empty data.
 ## Compromise::Emitter
 
 Compromise::Emitter is a wrapper to transform callback-style code into an awaitable, where Type is a type of object to return in co_yield.
+
+#### Methods:
+
+* **wake(value)** - resumes coroutine
+* **update(value&)** - optional virtual method, called by Emitter to initiate asynchronous call or update the value immediately
 
 ```C++
 Compromise::Task TestClient(CloudClient* context)
