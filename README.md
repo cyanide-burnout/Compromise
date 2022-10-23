@@ -33,13 +33,13 @@ Compromise::Future is a future class implementation no manage coroutine.
 * Controls live-cycle of coroutine
 * Provides awaitable interface to the caller, which allows to call one coroutine from another one
 
-#### Methods:
+#### Methods
 
 * **done()** - coroutine done or not exists
 * **value()** - get last value, passed by co_yield
 * **resume()** - resumes coroutine
 * **handle()** - get coroutine handle
-* **exception()** - returns a pointer to unhandled exception
+* **rethrow()** - rethrow an unhandled exception
 * **operator bool()** - coroutine exists and not done
 * **operator ()** - resumes coroutine and returns a value, passed by co_yield (synchronous call, value may be not set in case of incomplete execution)
 * **operator co_await()** - resumes coroutine and returns a value, passed by co_yield (asynchronous call)
@@ -68,6 +68,30 @@ void TestInvokeFromFunction()
 }
 
 Compromise::Task taskOnHeap = new Compromise::Task(TestYield());
+
+```
+
+#### Exception forwarding and handling
+
+Any unhandled exception in coroutine code will be forwarded to the main code.
+
+```C++
+Compromise::Task TestException()
+{
+  throw std::exception();
+}
+
+auto routine = TestException();
+
+try
+{
+  routine.rethrow();
+}
+catch (const std::exception& exception)
+{
+  printf("Unhandled exception: %s\n", exception.what());
+}
+
 
 ```
 

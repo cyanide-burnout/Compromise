@@ -32,7 +32,7 @@ namespace Compromise
 
   using Task = Future;
 
-  // In this implementation it is allowed to pass value back to caller by co_yield only.
+  // In this implementation it is allowed to pass value back to caller by co_yield only
 
   struct Promise
   {
@@ -72,9 +72,10 @@ namespace Compromise
 
       bool done();
       void resume();
+      void rethrow();
+
       Value& value();
       Handle& handle();
-      std::exception_ptr& exception();
 
       bool wait(Handle&);
 
@@ -106,8 +107,8 @@ namespace Compromise
 
       virtual bool update(Type&)
       {
-        // In case of synchronous processing, update() can update the data and return true to avoid coroutine from suspension.
-        // Otherwise update() has to return false and following callback must call wake() to resume coroutine.
+        // In case of synchronous processing, update() can update the data and return true to avoid coroutine from suspension
+        // Otherwise update() has to return false and following callback must call wake() to resume coroutine
         return false;
       };
   };
