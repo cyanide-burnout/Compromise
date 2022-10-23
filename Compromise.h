@@ -52,9 +52,9 @@ namespace Compromise
 
   template<class Actor, typename Type> struct Awaiter
   {
-    constexpr bool await_ready() const noexcept  { return false;              };
-    bool await_suspend(Handle handle)  noexcept  { return actor.wait(handle); };
-    Type await_resume()                noexcept  { return actor.value();      };
+    constexpr bool await_ready() const  { return false;              };
+    bool await_suspend(Handle handle)   { return actor.wait(handle); };
+    Type await_resume()                 { return actor.value();      };
 
     Actor& actor;
   };
