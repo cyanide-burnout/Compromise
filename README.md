@@ -39,7 +39,8 @@ Compromise::Future is a future class implementation no manage coroutine.
 * **value()** - get last value, passed by co_yield
 * **resume()** - resumes coroutine
 * **handle()** - get coroutine handle
-* **rethrow()** - rethrow an unhandled exception (if any)
+* **rethrow()** - rethrows an unhandled exception (if any)
+* **release()** - releases binding between coroutine and future
 * **operator bool()** - coroutine exists and not done
 * **operator ()()** - resumes coroutine and returns a value, passed by co_yield (synchronous call, value may be not set in case of incomplete execution)
 * **operator co_await()** - resumes coroutine and returns a value, passed by co_yield (asynchronous call)
@@ -95,7 +96,39 @@ catch (const std::exception& exception)
 
 ```
 
-## Compromise::Data / Compromise::Value / Compromise::Empty
+#### Hook
+
+Compromise::Future allows you to hook events of coroutine in callback manner. For example for cases, when you need to wait a result without pooling a coroutine or collect  garbage.
+
+```C++
+auto routine = new Compromise::Future(TestYield());
+routine->hook = [] (Compromise::Future* future, Compromise::Reason reason) -> bool
+{
+  if (reason == Compromise::Yield)
+  {
+    // This code will be called on co_yield
+    auto data = std::dynamic_pointer_cast<TestResult>(future->value());
+    if (data) printf("Test hook: %d\n", data->number);
+    return true;  // Don't suspend a coroutine, the result is already handled
+  }
+
+  if (reason == Compromise::Final)
+  {
+    // This code will be called after the end of coroutine's execution
+    printf("Test hook done\n");
+    future->release();  // Unbind coroutine from the future to prevent collision and fault on future's destruction
+    delete future;      // Since we created future on the heap we have to delete it
+    return true;        // Allow coroutine to destruct itself
+  }
+
+  return false;  // Suspend a coroutine (just an example)
+};
+
+// To avoid a loose of hook, coroutine used call co_yield Compromise::Empty() to suspend its execution immediately after creation
+routine->resume();
+```
+
+### Compromise::Data / Compromise::Value / Compromise::Empty
 
 Compromise::Data type for your own types to pass the data from (and to) coroutine using operator co_yield. Compromise::Value is simple smart pointer on it.
 
@@ -110,7 +143,7 @@ struct TestResult : Compromise::Data
 This approach allows to pass different data types between caller and callable in coroutine at the same time by using dynamic casting and type checking.
 Compromise::Empty is an alias to Compromise::Data to pass empty data.
 
-## Compromise::Emitter
+### Compromise::Emitter
 
 Compromise::Emitter is a wrapper to transform callback-style code into an awaitable, where Type is a type of object to return in co_yield.
 

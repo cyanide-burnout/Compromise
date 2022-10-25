@@ -9,6 +9,7 @@
 #include <utility>
 #include <coroutine>
 #include <exception>
+#include <functional>
 
 namespace Compromise
 {
@@ -19,6 +20,12 @@ namespace Compromise
   {
     Probable,
     Incomplete
+  };
+
+  enum Reason
+  {
+    Yield,
+    Final
   };
 
   struct Data
@@ -34,20 +41,14 @@ namespace Compromise
 
   // In this implementation it is allowed to pass value back to caller by co_yield only
 
-  struct Promise
+  struct Suspend
   {
-    Promise();
+    bool await_ready();
+    void await_suspend(Handle handle) const noexcept { };
+    void await_resume() const noexcept               { };
 
-    Future get_return_object();
-    std::suspend_never initial_suspend() noexcept;
-    std::suspend_always final_suspend() noexcept;
-    std::suspend_always yield_value(Value value);
-    void unhandled_exception();
-    void return_void();
-
-    Value data;
-    Status status;
-    std::exception_ptr exception;
+    Future* future;
+    enum Reason reason;
   };
 
   template<class Actor, typename Type> struct Awaiter
@@ -57,6 +58,23 @@ namespace Compromise
     Type await_resume()                 { return actor.value();      };
 
     Actor& actor;
+  };
+
+  struct Promise
+  {
+    Promise();
+
+    Future get_return_object();
+    std::suspend_never initial_suspend() noexcept;
+    Suspend final_suspend() noexcept;
+    Suspend yield_value(Value value);
+    void unhandled_exception();
+    void return_void();
+
+    Value data;
+    Status status;
+    Future* future;
+    std::exception_ptr exception;
   };
 
   class Future
@@ -73,6 +91,7 @@ namespace Compromise
       bool done();
       void resume();
       void rethrow();
+      void release();
 
       Value& value();
       Handle& handle();
@@ -82,6 +101,8 @@ namespace Compromise
       operator bool();
       Value& operator ()();
       Awaiter<Future, Value&> operator co_await() noexcept;
+
+      std::function<bool (Future*, Reason)> hook;
 
     private:
 

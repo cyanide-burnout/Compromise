@@ -2,6 +2,11 @@
 
 using namespace Compromise;
 
+bool Suspend::await_ready()
+{
+  return future && future->hook && future->hook(future, reason);
+}
+
 Promise::Promise() : status(Probable)
 {
 
@@ -17,15 +22,15 @@ std::suspend_never Promise::initial_suspend() noexcept
   return { };
 }
 
-std::suspend_always Promise::final_suspend() noexcept
+Suspend Promise::final_suspend() noexcept
 {
-  return { };
+  return { future, Final };
 }
 
-std::suspend_always Promise::yield_value(Value value)
+Suspend Promise::yield_value(Value value)
 {
   data = std::move(value);
-  return { };
+  return { future, Yield };
 }
 
 void Promise::unhandled_exception()
@@ -41,23 +46,26 @@ void Promise::return_void()
 Future::Future(Promise* promise)
 {
   routine = Handle::from_promise(*promise);
+  promise->future = this;
 }
 
 Future::Future(Handle&& handle)
 {
   std::swap(routine, handle);
+  routine.promise().future = this;
 }
 
 Future::Future(Future&& future)
 {
   std::swap(routine, future.routine);
+  routine.promise().future = this;
 }
 
 Future::~Future()
 {
   if (routine)
   {
-    // Handle has to be destroyed to prevent leakage
+    // Handle has to be destroyed to prevent a leakage
     routine.destroy();
   }
 }
@@ -80,6 +88,15 @@ void Future::rethrow()
   {
     // There is no need to return a status due to a throw
     std::rethrow_exception(std::exchange(routine.promise().exception, nullptr));
+  }
+}
+
+void Future::release()
+{
+  if (routine)
+  {
+    routine.promise().future = nullptr;
+    routine                  = nullptr;
   }
 }
 
