@@ -41,7 +41,7 @@ namespace Compromise
 
   // In this implementation it is allowed to pass value back to caller by co_yield only
 
-  struct Suspend
+  struct Suspender
   {
     bool await_ready();
     void await_suspend(Handle handle) const noexcept { };
@@ -66,8 +66,8 @@ namespace Compromise
 
     Future get_return_object();
     std::suspend_never initial_suspend() noexcept;
-    Suspend final_suspend() noexcept;
-    Suspend yield_value(Value value);
+    Suspender final_suspend() noexcept;
+    Suspender yield_value(Value value);
     void unhandled_exception();
     void return_void();
 

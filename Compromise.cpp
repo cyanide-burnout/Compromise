@@ -2,7 +2,7 @@
 
 using namespace Compromise;
 
-bool Suspend::await_ready()
+bool Suspender::await_ready()
 {
   return future && future->hook && future->hook(future, reason);
 }
@@ -22,12 +22,12 @@ std::suspend_never Promise::initial_suspend() noexcept
   return { };
 }
 
-Suspend Promise::final_suspend() noexcept
+Suspender Promise::final_suspend() noexcept
 {
   return { future, Final };
 }
 
-Suspend Promise::yield_value(Value value)
+Suspender Promise::yield_value(Value value)
 {
   data = std::move(value);
   return { future, Yield };
