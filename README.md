@@ -7,6 +7,21 @@ Artem Prilutskiy, 2022
 
 ## Main components
 
+### Compromise::Data / Compromise::Value / Compromise::Empty
+
+Compromise::Data type for your own types to pass the data from (and to) coroutine using operator co_yield. Compromise::Value is simple smart pointer on it.
+
+```C++
+struct TestResult : Compromise::Data
+{
+  int number;
+};
+
+```
+
+This approach allows to pass different data types between caller and callable in coroutine at the same time by using dynamic casting and type checking.
+Compromise::Empty is an alias to Compromise::Data to pass empty data.
+
 ### Compromise::Task / Compromise::Future
 
 Compromise::Future is main type that represents a coroutine, Compromise::Task is just an alias to simplify readability.
@@ -128,24 +143,9 @@ routine->hook = [] (Compromise::Future* future, Compromise::Reason reason) -> bo
 routine->resume();
 ```
 
-### Compromise::Data / Compromise::Value / Compromise::Empty
-
-Compromise::Data type for your own types to pass the data from (and to) coroutine using operator co_yield. Compromise::Value is simple smart pointer on it.
-
-```C++
-struct TestResult : Compromise::Data
-{
-  int number;
-};
-
-```
-
-This approach allows to pass different data types between caller and callable in coroutine at the same time by using dynamic casting and type checking.
-Compromise::Empty is an alias to Compromise::Data to pass empty data.
-
 ### Compromise::Emitter
 
-Compromise::Emitter is a wrapper to transform callback-style code into an awaitable, where Type is a type of object to return in co_yield.
+Compromise::Emitter is a wrapper to transform callback-style code into an awaitable, where Type is a type of object to return in co_await.
 
 #### Methods:
 

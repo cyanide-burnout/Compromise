@@ -7,7 +7,7 @@ bool Suspend::await_ready()
   return future && future->hook && future->hook(future, reason);
 }
 
-Promise::Promise() : status(Probable)
+Promise::Promise() : status(Probable), future(nullptr), exception(nullptr)
 {
 
 }
