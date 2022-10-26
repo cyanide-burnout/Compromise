@@ -4,7 +4,9 @@ using namespace Compromise;
 
 bool Suspender::await_ready()
 {
-  return future && future->hook && future->hook(future, reason);
+  return
+     future && future->hook && future->hook(future, (Reason)reason) ||
+    !future && reason;
 }
 
 Promise::Promise() : status(Probable), future(nullptr), exception(nullptr)
@@ -30,6 +32,13 @@ Suspender Promise::final_suspend() noexcept
 Suspender Promise::yield_value(Value value)
 {
   data = std::move(value);
+
+  if (entry)
+  {
+    std::exchange(entry, nullptr).resume();
+    return { nullptr, true };
+  }
+
   return { future, Yield };
 }
 
@@ -110,13 +119,21 @@ Handle& Future::handle()
   return routine;
 }
 
-bool Future::wait(Handle&)
+bool Future::wait(Handle& handle)
 {
   if (std::exchange(routine.promise().status, Incomplete) == Incomplete)
   {
     routine.promise().data.reset();
     routine.resume();
   }
+
+  if (!routine.promise().data.get())
+  {
+    // Probably the execution of coroutine was interrupted by co_await
+    routine.promise().entry = handle;
+    return true;
+  }
+
   return false;
 };
 
@@ -132,6 +149,7 @@ Value& Future::operator ()()
     routine.promise().data.reset();
     routine.resume();
   }
+
   return routine.promise().data;
 };
 

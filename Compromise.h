@@ -33,6 +33,7 @@ namespace Compromise
     virtual ~Data() = default;
   };
 
+  typedef std::function<bool (Future*, Reason)> Hook;
   typedef std::coroutine_handle<Promise> Handle;
   typedef std::shared_ptr<Data> Value;
   typedef Value Empty;
@@ -48,7 +49,7 @@ namespace Compromise
     void await_resume() const noexcept               { };
 
     Future* future;
-    enum Reason reason;
+    int reason;
   };
 
   template<class Actor, typename Type> struct Awaiter
@@ -72,6 +73,7 @@ namespace Compromise
     void return_void();
 
     Value data;
+    Handle entry;
     Status status;
     Future* future;
     std::exception_ptr exception;
@@ -96,13 +98,13 @@ namespace Compromise
       Value& value();
       Handle& handle();
 
-      bool wait(Handle&);
+      bool wait(Handle& handle);
 
       operator bool();
       Value& operator ()();
       Awaiter<Future, Value&> operator co_await() noexcept;
 
-      std::function<bool (Future*, Reason)> hook;
+      Hook hook;
 
     private:
 
