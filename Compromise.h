@@ -18,14 +18,9 @@ namespace Compromise
 
   enum Status
   {
-    Probable,
-    Incomplete
-  };
-
-  enum Reason
-  {
+    Idle,
     Yield,
-    Final
+    Return
   };
 
   struct Data
@@ -33,7 +28,7 @@ namespace Compromise
     virtual ~Data() = default;
   };
 
-  typedef std::function<bool (Future*, Reason)> Hook;
+  typedef std::function<bool (Future*, Status)> Hook;
   typedef std::coroutine_handle<Promise> Handle;
   typedef std::shared_ptr<Data> Value;
   typedef Value Empty;
@@ -49,7 +44,7 @@ namespace Compromise
     void await_resume() const noexcept               { };
 
     Future* future;
-    int reason;
+    int status;
   };
 
   template<class Actor, typename Type> struct Awaiter

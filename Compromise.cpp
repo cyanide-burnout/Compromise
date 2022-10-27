@@ -5,11 +5,11 @@ using namespace Compromise;
 bool Suspender::await_ready()
 {
   return
-     future && future->hook && future->hook(future, (Reason)reason) ||
-    !future && reason;
+     future && future->hook && future->hook(future, (Status)status) ||
+    !future && status;
 }
 
-Promise::Promise() : status(Probable), future(nullptr), exception(nullptr)
+Promise::Promise() : status(Idle), future(nullptr), exception(nullptr)
 {
 
 }
@@ -26,12 +26,14 @@ std::suspend_never Promise::initial_suspend() noexcept
 
 Suspender Promise::final_suspend() noexcept
 {
-  return { future, Final };
+  status = Return;
+  return { future, status };
 }
 
 Suspender Promise::yield_value(Value value)
 {
-  data = std::move(value);
+  data   = std::move(value);
+  status = Yield;
 
   if (entry)
   {
@@ -39,7 +41,7 @@ Suspender Promise::yield_value(Value value)
     return { nullptr, true };
   }
 
-  return { future, Yield };
+  return { future, status };
 }
 
 void Promise::unhandled_exception()
@@ -86,7 +88,7 @@ bool Future::done()
 
 void Future::resume()
 {
-  routine.promise().status = Probable;
+  routine.promise().status = Idle;
   routine.promise().data.reset();
   routine.resume();
 }
@@ -121,15 +123,14 @@ Handle& Future::handle()
 
 bool Future::wait(Handle& handle)
 {
-  if (std::exchange(routine.promise().status, Incomplete) == Incomplete)
+  if (std::exchange(routine.promise().status, Idle) == Idle)
   {
     routine.promise().data.reset();
     routine.resume();
   }
 
-  if (!routine.promise().data.get())
+  if (routine.promise().status == Idle)
   {
-    // Probably the execution of coroutine was interrupted by co_await
     routine.promise().entry = handle;
     return true;
   }
@@ -144,7 +145,7 @@ Future::operator bool()
 
 Value& Future::operator ()()
 {
-  if (std::exchange(routine.promise().status, Incomplete) == Incomplete)
+  if (std::exchange(routine.promise().status, Idle) == Idle)
   {
     routine.promise().data.reset();
     routine.resume();

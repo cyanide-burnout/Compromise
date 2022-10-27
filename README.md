@@ -117,9 +117,9 @@ Compromise::Future allows you to hook events of coroutine in callback manner. Fo
 
 ```C++
 auto routine = new Compromise::Future(TestYield());
-routine->hook = [] (Compromise::Future* future, Compromise::Reason reason) -> bool
+routine->hook = [] (Compromise::Future* future, Compromise::Status status) -> bool
 {
-  if (reason == Compromise::Yield)
+  if (status == Compromise::Yield)
   {
     // This code will be called on co_yield
     auto data = std::dynamic_pointer_cast<TestResult>(future->value());
@@ -127,7 +127,7 @@ routine->hook = [] (Compromise::Future* future, Compromise::Reason reason) -> bo
     return true;  // Don't suspend a coroutine, the result is already handled
   }
 
-  if (reason == Compromise::Final)
+  if (status == Compromise::Return)
   {
     // This code will be called after the end of coroutine's execution
     printf("Test hook done\n");
