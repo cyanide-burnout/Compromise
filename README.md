@@ -1,5 +1,6 @@
 # Compromise
-Simple C++ coroutine helper library
+
+Simple C++ coroutine helper library, suitable to integrate with main loop.
 
 Artem Prilutskiy, 2022
 
