@@ -19,6 +19,7 @@ namespace Compromise
   enum Status
   {
     Idle,
+    Await,
     Yield,
     Return
   };
@@ -40,10 +41,11 @@ namespace Compromise
   struct Suspender
   {
     bool await_ready();
-    void await_suspend(Handle handle) const noexcept { };
-    void await_resume() const noexcept               { };
+    void await_suspend(Handle) noexcept;
+    void await_resume() const noexcept;
 
     Future* future;
+    Handle entry;
     int status;
   };
 
@@ -110,9 +112,9 @@ namespace Compromise
   {
     public:
 
-      const Type& value()           { return data;                                                                 };
-      bool wait(Handle& handle)     { routine = std::move(handle); return !update(data);                           };
-      void wake(const Type& event)  { if (routine) { data = std::move(event); std::exchange(routine, nullptr)(); } };
+      const Type& value()           { return data;                                                                         };
+      bool wait(Handle& handle)     { routine = std::move(handle); routine.promise().status = Await; return !update(data); };
+      void wake(const Type& event)  { if (routine) { data = std::move(event); std::exchange(routine, nullptr)(); }         };
 
       Awaiter<Emitter, const Type&> operator co_await() noexcept  {  return { *this }; };
 

@@ -9,6 +9,20 @@ bool Suspender::await_ready()
     !future && status;
 }
 
+void Suspender::await_suspend(Handle) noexcept
+{
+  if (entry)
+  {
+    // Resume coroutine instead of returning coroutine_handle<> to prevent segmentation fault in case of null pointer
+    entry.resume();
+  }
+}
+
+void Suspender::await_resume() const noexcept
+{
+
+}
+
 Promise::Promise() : status(Idle), future(nullptr), exception(nullptr)
 {
 
@@ -27,21 +41,21 @@ std::suspend_never Promise::initial_suspend() noexcept
 Suspender Promise::final_suspend() noexcept
 {
   status = Return;
-  return { future, status };
+  return { future, nullptr, status };
 }
 
 Suspender Promise::yield_value(Value value)
 {
-  data   = std::move(value);
-  status = Yield;
+  data = std::move(value);
 
   if (entry)
   {
-    std::exchange(entry, nullptr).resume();
-    return { nullptr, true };
+    status = Idle;
+    return { nullptr, std::exchange(entry, nullptr), false };
   }
 
-  return { future, status };
+  status = Yield;
+  return { future, nullptr, status };
 }
 
 void Promise::unhandled_exception()
@@ -123,16 +137,23 @@ Handle& Future::handle()
 
 bool Future::wait(Handle& handle)
 {
-  if (std::exchange(routine.promise().status, Idle) == Idle)
+  while (routine.promise().status != Return)
   {
-    routine.promise().data.reset();
-    routine.resume();
-  }
+    switch (routine.promise().status)
+    {
+      case Idle:
+        routine.promise().data.reset();
+        routine.resume();
+        continue;
 
-  if (routine.promise().status == Idle)
-  {
-    routine.promise().entry = handle;
-    return true;
+      case Await:
+        routine.promise().entry = handle;
+        return true;
+
+      case Yield:
+        routine.promise().status = Idle;
+        return false;
+    }
   }
 
   return false;
