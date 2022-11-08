@@ -6,6 +6,14 @@ Artem Prilutskiy, 2022
 
 *Please note*, examples are incomplete but functional :)
 
+## Fratures
+
+* Can be integrated to main loop
+* Allows call coroutines from coroutines asynchronously (asymmetric coroutines)
+* Allows proceed coroutines status in callbacks (see Hook)
+* Provides base interface to create asynchronous wrappers to be called from coroutines (Compromise::Emitter)
+* *Not thread safe*
+
 ## Main components
 
 ### Compromise::Data / Compromise::Value / Compromise::Empty

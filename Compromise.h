@@ -82,6 +82,8 @@ namespace Compromise
 
       using promise_type = Promise;
 
+      Future(const Future& future) = delete;
+
       explicit Future(Promise* promise);
       Future(Handle&& handle);
       Future(Future&& future);
