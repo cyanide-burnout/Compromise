@@ -12,7 +12,7 @@ Artem Prilutskiy, 2022
 * Allows call coroutines from coroutines asynchronously (asymmetric coroutines)
 * Allows proceed coroutines status in callbacks (see Hook)
 * Provides base interface to create asynchronous wrappers to be called from coroutines (Compromise::Emitter)
-* *Not thread safe*
+* **Not thread safe**
 
 ## Main components
 
