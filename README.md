@@ -6,7 +6,7 @@ Artem Prilutskiy, 2022
 
 *Please note*, examples are incomplete but functional :)
 
-## Fratures
+## Features
 
 * Can be integrated to main loop
 * Allows call coroutines from coroutines asynchronously (asymmetric coroutines)
