@@ -94,8 +94,8 @@ namespace Compromise
       void rethrow();
       void release();
 
-      Value& value();
-      Handle& handle();
+      Value& value() &;
+      Handle& handle() &;
 
       bool wait(Handle& handle);
 
@@ -114,7 +114,7 @@ namespace Compromise
   {
     public:
 
-      const Type& value()           { return data;                                                                         };
+      const Type& value() &         { return data;                                                                         };
       bool wait(Handle& handle)     { routine = std::move(handle); routine.promise().status = Await; return !update(data); };
       void wake(const Type& event)  { if (routine) { data = std::move(event); std::exchange(routine, nullptr)(); }         };
 

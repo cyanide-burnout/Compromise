@@ -125,12 +125,12 @@ void Future::release()
   }
 }
 
-Value& Future::value()
+Value& Future::value() &
 {
   return routine.promise().data;
 }
 
-Handle& Future::handle()
+Handle& Future::handle() &
 {
   return routine;
 }
