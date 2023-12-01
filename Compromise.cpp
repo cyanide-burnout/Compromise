@@ -2,7 +2,7 @@
 
 using namespace Compromise;
 
-bool Suspender::await_ready()
+bool Suspender::await_ready() noexcept
 {
   return
      future && future->hook && future->hook(future, (Status)status) ||

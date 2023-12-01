@@ -40,7 +40,7 @@ namespace Compromise
 
   struct Suspender
   {
-    bool await_ready();
+    bool await_ready() noexcept;
     void await_suspend(Handle) noexcept;
     void await_resume() const noexcept;
 
