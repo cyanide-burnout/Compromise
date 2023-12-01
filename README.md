@@ -2,7 +2,7 @@
 
 Simple C++ coroutine helper library, suitable to integrate with main loop.
 
-Artem Prilutskiy, 2022
+Artem Prilutskiy, 2022-2023
 
 *Please note*, examples are incomplete but functional :)
 
