@@ -2,7 +2,7 @@
 
 Simple C++ coroutine helper library, suitable to integrate with main loop.
 
-Artem Prilutskiy, 2022-2023
+Artem Prilutskiy, 2022-2024
 
 *Please note*, examples are incomplete but functional :)
 
@@ -53,7 +53,7 @@ Now is about co_return. To make coroutines more generic, there is no support of 
 
 Compromise::Future is a future class implementation no manage coroutine.
 
-* Can be created on the stack as well as on the heap by using copy constructor
+* Can be created on the stack as well as on the heap
 * Controls live-cycle of coroutine
 * Provides awaitable interface to the caller, which allows to call one coroutine from another one
 
