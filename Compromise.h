@@ -3,7 +3,7 @@
 
 // Simple C++ coroutine helper library
 // https://github.com/cyanide-burnout/Compromise
-// Artem Prilutskiy, 2022
+// Artem Prilutskiy, 2022-2024
 
 #include <memory>
 #include <utility>
@@ -114,9 +114,9 @@ namespace Compromise
   {
     public:
 
-      const Type& value() &         { return data;                                                                         };
-      bool wait(Handle& handle)     { routine = std::move(handle); routine.promise().status = Await; return !update(data); };
-      void wake(const Type& event)  { if (routine) { data = std::move(event); std::exchange(routine, nullptr)(); }         };
+      const Type& value() &         { return data;                                                              };
+      bool wait(Handle& handle)     { routine = handle; routine.promise().status = Await; return !update(data); };
+      void wake(const Type& event)  { if (routine) { data = event; std::exchange(routine, nullptr)(); }         };
 
       Awaiter<Emitter, const Type&> operator co_await() noexcept  {  return { *this }; };
 
