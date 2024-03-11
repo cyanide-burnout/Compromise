@@ -49,7 +49,7 @@ namespace Compromise
     int status;
   };
 
-  template<class Actor, typename Type> struct Awaiter
+  template<typename Actor, typename Type> struct Awaiter
   {
     constexpr bool await_ready() const  { return false;              };
     bool await_suspend(Handle handle)   { return actor.wait(handle); };
@@ -110,7 +110,7 @@ namespace Compromise
       Handle routine;
   };
 
-  template<class Type> class Emitter
+  template<typename Type> class Emitter
   {
     public:
 
