@@ -2,7 +2,7 @@
 
 Simple C++ coroutine helper library, suitable to integrate with main loop.
 
-Artem Prilutskiy, 2022-2024
+Artem Prilutskiy, 2022-2025
 
 *Please note*, examples are incomplete but functional :)
 
@@ -16,21 +16,6 @@ Artem Prilutskiy, 2022-2024
 
 ## Main components
 
-### Compromise::Data / Compromise::Value / Compromise::Empty
-
-Compromise::Data type for your own types to pass the data from (and to) coroutine using operator co_yield. Compromise::Value is simple smart pointer on it.
-
-```C++
-struct TestResult : Compromise::Data
-{
-  int number;
-};
-
-```
-
-This approach allows to pass different data types between caller and callable in coroutine at the same time by using dynamic casting and type checking.
-Compromise::Empty is an alias to Compromise::Data to pass empty data.
-
 ### Compromise::Task / Compromise::Future
 
 Compromise::Future is main type that represents a coroutine, Compromise::Task is just an alias to simplify readability.
@@ -38,17 +23,15 @@ Compromise::Future is main type that represents a coroutine, Compromise::Task is
 ```C++
 Compromise::Task TestYield()
 {
-  std::shared_ptr<TestResult> data = std::make_shared<TestResult>();
+  co_yield std::any();
 
-  co_yield Compromise::Empty();
-
-  for (data->number = 0; data->number < 10; data->number ++)
-    co_yield data;
+  for (int number = 0; number < 10; number ++)
+    co_yield number;
 }
 
 ```
 
-There is no suspend on the start of coroutine. In case when you need to suspend coroutine immedietly after the start you can always use co_yield with Compromise::Empty().
+There is no suspend on the start of coroutine. In case when you need to suspend coroutine immedietly after the start you can always use co_yield with empty std::any().
 Now is about co_return. To make coroutines more generic, there is no support of return values, but you can always use co_yield to pass result before exiting.
 
 Compromise::Future is a future class implementation no manage coroutine.
@@ -76,8 +59,8 @@ Compromise::Task TestInvokeFromCoroutine()
 
   while (routine)
   {
-    auto data = std::dynamic_pointer_cast<TestResult>(co_await routine);
-    if (data) printf("Result: %d\n", data->number);
+    auto& data = co_await routine;
+    if (data.has_value()) printf("Result: %d\n", std::any_cast<int>(data));
   }
 }
 
@@ -87,8 +70,8 @@ void TestInvokeFromFunction()
 
   while (routine)
   {
-    auto data = std::dynamic_pointer_cast<TestResult>(routine());
-    if (data) printf("Result: %d\n", data->number);
+    auto& data = routine();
+    if (data.has_value()) printf("Result: %d\n", std::any_cast<int>(data));
   }
 }
 
@@ -131,8 +114,8 @@ routine->hook = [] (Compromise::Future* future, Compromise::Status status) -> bo
   if (status == Compromise::Yield)
   {
     // This code will be called on co_yield
-    auto data = std::dynamic_pointer_cast<TestResult>(future->value());
-    if (data) printf("Test hook: %d\n", data->number);
+    auto& data = future->value();
+    if (data.has_value()) printf("Test hook: %d\n", std::any_cast<int>(data));
     return true;  // Don't suspend a coroutine, the result is already handled
   }
 

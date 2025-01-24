@@ -44,7 +44,7 @@ Suspender Promise::final_suspend() noexcept
   return { future, nullptr, status };
 }
 
-Suspender Promise::yield_value(Value value)
+Suspender Promise::yield_value(std::any value)
 {
   data = std::move(value);
 
@@ -125,14 +125,14 @@ void Future::release()
   }
 }
 
-Value& Future::value() &
-{
-  return routine.promise().data;
-}
-
 Handle& Future::handle() &
 {
   return routine;
+}
+
+std::any& Future::value() &
+{
+  return routine.promise().data;
 }
 
 bool Future::wait(Handle& handle)
@@ -164,7 +164,7 @@ Future::operator bool()
   return routine && !routine.done();
 }
 
-Value& Future::operator ()()
+std::any& Future::operator ()()
 {
   if (std::exchange(routine.promise().status, Idle) == Idle)
   {
@@ -175,7 +175,7 @@ Value& Future::operator ()()
   return routine.promise().data;
 };
 
-Awaiter<Future, Value&> Future::operator co_await() noexcept
+Awaiter<Future, std::any&> Future::operator co_await() noexcept
 {
   return { *this };
 };

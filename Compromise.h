@@ -3,9 +3,9 @@
 
 // Simple C++ coroutine helper library
 // https://github.com/cyanide-burnout/Compromise
-// Artem Prilutskiy, 2022-2024
+// Artem Prilutskiy, 2022-2025
 
-#include <memory>
+#include <any>
 #include <utility>
 #include <coroutine>
 #include <exception>
@@ -24,15 +24,8 @@ namespace Compromise
     Return
   };
 
-  struct Data
-  {
-    virtual ~Data() = default;
-  };
-
   typedef std::function<bool (Future*, Status)> Hook;
   typedef std::coroutine_handle<Promise> Handle;
-  typedef std::shared_ptr<Data> Value;
-  typedef Value Empty;
 
   using Task = Future;
 
@@ -65,14 +58,15 @@ namespace Compromise
     Future get_return_object();
     std::suspend_never initial_suspend() noexcept;
     Suspender final_suspend() noexcept;
-    Suspender yield_value(Value value);
+    Suspender yield_value(std::any value);
     void unhandled_exception();
     void return_void();
 
-    Value data;
     Handle entry;
     Status status;
     Future* future;
+
+    std::any data;
     std::exception_ptr exception;
   };
 
@@ -94,14 +88,14 @@ namespace Compromise
       void rethrow();
       void release();
 
-      Value& value() &;
       Handle& handle() &;
+      std::any& value() &;
 
       bool wait(Handle& handle);
 
       operator bool();
-      Value& operator ()();
-      Awaiter<Future, Value&> operator co_await() noexcept;
+      std::any& operator ()();
+      Awaiter<Future, std::any&> operator co_await() noexcept;
 
       Hook hook;
 
